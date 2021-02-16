@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Gadhage Hospital</title>
+
+
+</head>
+
+<body>
+  <h1>Gadhage Hospital</h1>
+
+  <textarea type="text" placeholder="Type here" id="first" rows="5" cols="50"></textarea>
+  <input name="userfile" type="file"
+    accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+  <br />
+  <label for="row">Rows: </label>
+  <input type="number" id="r" name="r" placeholder="Number of rows" />
+  <label for="Column">Columns: </label>
+  <input type="number" id="c" name="c" placeholder="Number of columns" /><br />
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" checked>
+    <button id="btn">Generate Table</button>
+
+    <input type="button" value="Delete Table" onclick="removeAll()">
+  </div>
+  <table id="excelDataTable" border="1">
+  </table>
+  <button id="csv">Export HTML table to CSV file</button>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+  <!-- Optional JavaScript; choose one of the two! -->
+
+  <!-- Option 1: Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+    crossorigin="anonymous"></script>
+  <script>
+    //document.getElementById('table-div').appendChild(createTable(3, 4));
+
+    document.getElementById('btn').click()
+
+    document.getElementById("btn").addEventListener('click', function () {
+
+      function getJsonData(query) {
+        let person = query.split('\n\n');
+        let modifiedArray = new Array();
+        for (let i = 0; i < person.length; i++) {
+          let arrayOfKeyValues = person[i].split('\n');
+          console.log(arrayOfKeyValues);
+          for (let i = 0; i < arrayOfKeyValues.length; i++) {
+            let arrayValues = arrayOfKeyValues[i].split(':');
+            let arrayString = '"' + arrayValues[0].trim() + '"' + ':' + '"' + arrayValues[1].trim() + '"';
+            modifiedArray.push(arrayString);
+          }
+          let jsonDataString = '{' + modifiedArray.toString() + '}';
+          let jsonData = JSON.parse(jsonDataString);
+          myList.push(jsonData);
+        }
+        // console.log(jsonData);
+        // console.log(typeof jsonData);
+        // return jsonData;
+      }
+      // var strr = document.getElementById('first').value;
+      // var jss = JSON.stringify(strr);
+      let query = document.getElementById('first').value;
+      var newStr = query.replace(/-/g, ':');
+      var myList = new Array();
+      // let response = 
+      getJsonData(newStr);
+
+      // console.log(JSON.stringify(response));
+
+      // console.log(myList);
+      // myList.push(JSON.stringify(response));
+      // buildHtmlTable();
+      buildHtmlTable(document.getElementById("r").value, document.getElementById("c").value);
+      // Builds the HTML Table out of myList json data from Ivy restful service.
+      function buildHtmlTable(r,c) {
+        var columns = addAllColumnHeaders(myList,r,c);
+
+        for (var i = 0; i < r; i++) {
+          var row$ = $('<tr/>');
+          for (var colIndex = 0; colIndex < c; colIndex++) {
+            var cellValue = myList[i][columns[colIndex]];
+
+            if (cellValue == null) { cellValue = ""; }
+
+            row$.append($('<td/>').html(cellValue));
+          }
+          $("#excelDataTable").append(row$);
+        }
+      }
+
+      // Adds a header row to the table and returns the set of columns.
+      // Need to do union of keys from all records as some records may not contain
+      // all records
+      function addAllColumnHeaders(myList,r,c) {
+        var columnSet = [];
+        var j = 0;
+        var headerTr$ = $('<tr/>');
+       var rt= document.getElementById("c").value;
+       
+        for (var i = 0; i < r; i++) {
+          var rowHash = myList[i];
+          for (var key in rowHash) {
+            j++;
+            if (j ===  parseInt(rt) +1 )
+              {
+                j=0;
+                break;
+              }
+            if ($.inArray(key, columnSet) == -1) {
+              columnSet.push(key);
+              headerTr$.append($('<th/>').html(key));
+            }
+          }
+        }
+        $("#excelDataTable").append(headerTr$);
+
+        return columnSet;
+      }
+      
+      // document.getElementById('table-div').appendChild(tb);
+      
+    });
+   
+    
+    // function createTable(r, c) {
+
+    //   var tb = document.createElement('table');
+    //   for (var i = 0; i < r; i++) {
+    //     var row = document.createElement('tr');
+    //     for (var j = 0; j < c; j++) {
+    //       var colum = document.createElement('th');
+    //       var column = document.createElement('td');
+    //       var input = document.createElement("input");
+    //       input.type = "text";
+    //       colum.appendChild(input);
+    //       column.appendChild(colum);
+    //       row.appendChild(column);
+    //     }
+    //     tb.appendChild(row);
+    //   }
+
+    //   return tb;
+    // }
+
+    function download_csv(csv, filename) {
+      var csvFile;
+      var downloadLink;
+
+      // CSV FILE
+      csvFile = new Blob([csv], { type: "text/csv" });
+
+      // Download link
+      downloadLink = document.createElement("a");
+
+      // File name
+      downloadLink.download = filename;
+
+      // We have to create a link to the file
+      downloadLink.href = window.URL.createObjectURL(csvFile);
+
+      // Make sure that the link is not displayed
+      downloadLink.style.display = "none";
+
+      // Add the link to your DOM
+      document.body.appendChild(downloadLink);
+
+      // Lanzamos
+      downloadLink.click();
+    }
+
+    function export_table_to_csv(html, filename) {
+      var csv = [];
+      var rows = document.querySelectorAll("table tr");
+
+      for (var i = 0; i < rows.length; i++) {
+        var row = [], cols = rows[i].querySelectorAll("th,td");
+
+        for (var j = 0; j < cols.length; j++)
+          row.push(cols[j].innerText);
+
+        csv.push(row.join(","));
+      }
+
+      // Download CSV
+      download_csv(csv.join("\n"), filename);
+    }
+
+    document.getElementById("csv").addEventListener("click", function () {
+      var html = document.querySelector("#excelDataTable").outerHTML;
+      export_table_to_csv(html, "data.csv");
+    });
+
+    function removeAll() {
+      document.getElementById("excelDataTable").innerHTML = "";
+    }
+
+  </script>
+  <!-- Option 2: Separate Popper and Bootstrap JS -->
+  <!--
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-q2kxQ16AaE6UbzuKqyBE9/u/KzioAlnx2maXQHiDX9d4/zp8Ok3f+M7DPm+Ib6IU" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-pQQkAEnwaBkjpqZ8RU1fF1AKtTcHJwFl3pblpTlHXybJjHpMYo79HY3hIi4NKxyj" crossorigin="anonymous"></script>
+    -->
+</body>
+
+</html>
