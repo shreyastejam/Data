@@ -1,1 +1,5 @@
-hdbh
+<?
+
+include_once("index.html");
+
+?>
