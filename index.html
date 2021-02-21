@@ -19,8 +19,7 @@
   <h1>Gadhage Hospital</h1>
 
   <textarea type="text" placeholder="Type here" id="first" rows="5" cols="50"></textarea>
-  <input name="userfile" type="file"
-    accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+  <input type="file" id="inputfile" accept=".xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf" />
   <br />
   <label for="row">Rows: </label>
   <input type="number" id="r" name="r" placeholder="Number of rows" />
@@ -47,6 +46,17 @@
   <script>
     //document.getElementById('table-div').appendChild(createTable(3, 4));
 
+    document.getElementById('inputfile') 
+            .addEventListener('change', function() { 
+              
+            var fr=new FileReader(); 
+            fr.onload=function(){ 
+                document.getElementById('first') 
+                        .textContent=fr.result; 
+            } 
+             
+            fr.readAsText(this.files[0]); 
+        }) 
     document.getElementById('btn').click()
 
     document.getElementById("btn").addEventListener('click', function () {
