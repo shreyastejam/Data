@@ -32,6 +32,7 @@
 
     <input type="button" value="Delete Table" onclick="removeAll()">
   </div>
+  <a href="edit" id=edit>Edit table</a>
   <table id="excelDataTable" border="1">
   </table>
   <button id="csv">Export HTML table to CSV file</button>
@@ -132,6 +133,43 @@
       // document.getElementById('table-div').appendChild(tb);
       
     });
+    $('#edit').click(function() {
+    var headers = $('#excelDataTable th').map(function() {
+        var th =  $(this);
+        return {
+            text: th.text(),
+            shown: th.css('display') != 'none'
+        };
+    });
+    
+    var h = ['<div id=tableEditor><button id=done style="margin-right: 50px;">Done</button><excelDataTable><thead><tr>'];
+    $.each(headers, function() {
+        h.push('<th><input type=checkbox',
+               (this.shown ? ' checked ' : ' '),
+               '/> ',
+               this.text,
+               '</th>');
+    });
+    h.push('</tr></thead></excelDataTable></div>');
+    $('body').append(h.join(''));
+    
+    $('#done').click(function() {
+        var showHeaders = $('#tableEditor input').map(function() { return this.checked; });
+        $.each(showHeaders, function(i, show) {
+            var cssIndex = i + 1;
+            var tags = $('#excelDataTable th:nth-child(' + cssIndex + '), #excelDataTable td:nth-child(' + cssIndex + ')');
+            if (show)
+                tags.show();
+            else
+                tags.remove();
+        });
+        
+        $('#tableEditor').remove();
+        return false;
+    });
+    
+    return false;
+});
    
     
     // function createTable(r, c) {
